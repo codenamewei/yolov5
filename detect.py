@@ -128,17 +128,17 @@ def run(weights='yolov5s.pt',  # model.pt path(s)
                 det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
 
                 if border_padding != 0:
-                    print("add padding")
+
                     det[:, :2] -= border_padding
                     det[:, 2:4] += (border_padding * 2)
 
-                    det[det < 0] = 0
+                    det[det[0, 4] < 0] = 0
 
                     max_width = im0.shape[0] - 1
                     max_height = im0.shape[1] - 1
 
-                    det[det[:, 2] > max_width] = max_width
-                    det[det[:, 3] > max_height] = max_height
+                    det[det[:, 2] > max_width, 2] = max_width
+                    det[det[:, 3] > max_height, 3] = max_height
 
                 # Print results
                 for c in det[:, -1].unique():
