@@ -48,6 +48,7 @@ def run(weights='yolov5s.pt',  # model.pt path(s)
         hide_labels=False,  # hide labels
         hide_conf=False,  # hide confidences
         half=False,  # use FP16 half-precision inference
+        border_padding=0
         ):
     save_img = not nosave and not source.endswith('.txt')  # save inference images
     webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
@@ -108,6 +109,7 @@ def run(weights='yolov5s.pt',  # model.pt path(s)
         if classify:
             pred = apply_classifier(pred, modelc, img, im0s)
 
+
         # Process detections
         for i, det in enumerate(pred):  # detections per image
             if webcam:  # batch_size >= 1
@@ -124,6 +126,19 @@ def run(weights='yolov5s.pt',  # model.pt path(s)
             if len(det):
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
+
+                if border_padding != 0:
+                    print("add padding")
+                    det[:, :2] -= border_padding
+                    det[:, 2:4] += (border_padding * 2)
+
+                    det[det < 0] = 0
+
+                    max_width = im0.shape[0] - 1
+                    max_height = im0.shape[1] - 1
+
+                    det[det[:, 2] > max_width] = max_width
+                    det[det[:, 3] > max_height] = max_height
 
                 # Print results
                 for c in det[:, -1].unique():
@@ -207,6 +222,7 @@ def parse_opt():
     parser.add_argument('--hide-labels', default=False, action='store_true', help='hide labels')
     parser.add_argument('--hide-conf', default=False, action='store_true', help='hide confidences')
     parser.add_argument('--half', action='store_true', help='use FP16 half-precision inference')
+    parser.add_argument('--border-padding', type=int, default=0, help='add rim to border')
     opt = parser.parse_args()
     return opt
 
